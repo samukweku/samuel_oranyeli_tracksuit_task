@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_hubspot__companies
+    description: Typed and standardised HubSpot company records.
+    columns:
+      - name: company_id
+        data_tests: [unique, not_null]
+      - name: customer_size_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Enterprise', 'Mid-Market', 'SMB', 'Startup']
+  - name: stg_subskribe__accounts
+    description: Typed billing accounts.
+    columns:
+      - name: account_id
+        data_tests: [unique, not_null]
+  - name: stg_subskribe__subscriptions
+    description: Typed subscription contracts.
+    columns:
+      - name: subscription_id
+        data_tests: [unique, not_null]
+      - name: subscription_state
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['ACTIVE', 'CANCELED', 'EXPIRED']
+  - name: stg_subskribe__invoices
+    description: Typed invoice records with an explicit recognised-revenue flag.
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+      - name: invoice_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['PAID', 'POSTED', 'VOIDED']

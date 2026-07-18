@@ -1,0 +1,35 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Landed extracts from HubSpot and Subskribe, loaded by load_raw_data.py.
+    schema: raw
+    tables:
+      - name: hubspot_companies
+        columns:
+          - name: company_id
+            data_tests: [unique, not_null]
+      - name: subskribe_accounts
+        columns:
+          - name: account_id
+            data_tests: [unique, not_null]
+      - name: subskribe_subscriptions
+        columns:
+          - name: subscription_id
+            data_tests: [unique, not_null]
+          - name: account_id
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'subskribe_accounts')
+                    field: account_id
+      - name: subskribe_invoices
+        columns:
+          - name: invoice_id
+            data_tests: [unique, not_null]
+          - name: subscription_id
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'subskribe_subscriptions')
+                    field: subscription_id

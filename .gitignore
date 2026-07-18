@@ -1,0 +1,6 @@
+.venv/
+logs/
+target/
+tracksuit.duckdb
+.user.yml
+.DS_Store

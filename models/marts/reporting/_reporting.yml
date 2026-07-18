@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: rpt_monthly_grr_by_customer_size
+    description: Monthly GRR for the last 12 available revenue months; it fixes the cohort 12 months earlier and caps retained customer revenue at cohort revenue.
+    columns:
+      - name: report_month
+        data_tests: [not_null]
+      - name: customer_size_group
+        data_tests: [not_null]

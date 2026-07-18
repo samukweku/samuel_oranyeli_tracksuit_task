@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: Current customer dimension, resolving retired HubSpot IDs and retaining unmatched billing customers.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: customer_size_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Enterprise', 'Mid-Market', 'SMB', 'Startup', 'Unknown']
+  - name: fct_customer_subscription_month
+    description: One row per subscription and calendar month in its contract term, with recognised invoice revenue in NZD.
+    columns:
+      - name: subscription_month
+        data_tests: [not_null]
+      - name: subscription_id
+        data_tests: [not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
