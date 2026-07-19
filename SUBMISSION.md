@@ -23,6 +23,6 @@ GRR aggregates recognised invoice events to customer-month in the reporting laye
 
 ## Data quality observations
 
-Thirteen billing accounts use a retired HubSpot ID present in `merged_object_ids`; `int_customer_id_map` resolves them to the surviving company. Two billing accounts have no CRM match. They are retained with a stable `unmatched:<account_id>` key and `Unknown` size group, rather than being dropped or fuzzily matched by name.
+HubSpot's `company_id` identifies the current, canonical company record. Its `merged_object_ids` are retired IDs from older company records that were merged into it. Thirteen billing accounts reference one of those retired IDs; `int_customer_id_map` maps both current and retired IDs to the canonical `company_id` before customer joins. Two billing accounts have no CRM match. They are retained with a stable `unmatched:<account_id>` key and `Unknown` size group, rather than being dropped or fuzzily matched by name.
 
 Invoice dates can fall outside exact subscription dates, commonly because billing occurs before service starts. The model uses month-level contract activity and invoice-month revenue, avoiding an incorrect day-level exclusion. Source records only provide current subscription and customer attributes, so no historical SCD accuracy is implied.

@@ -1,6 +1,15 @@
 version: 2
 
 models:
+  - name: int_customer_id_map
+    description: HubSpot identity crosswalk. Each current company_id maps to itself; each retired ID in merged_object_ids maps to that current canonical company_id.
+    columns:
+      - name: source_company_id
+        description: Current or retired HubSpot company ID that may appear in a downstream system.
+        data_tests: [unique, not_null]
+      - name: resolved_company_id
+        description: Current canonical HubSpot company_id to use for customer joins.
+        data_tests: [not_null]
   - name: int_billing_account_customer
     description: Canonical billing-account to customer mapping, including deterministic HubSpot merged-ID resolution.
     columns:
