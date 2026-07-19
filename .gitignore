@@ -5,3 +5,4 @@ dbt_packages/
 tracksuit.duckdb
 .user.yml
 .DS_Store
+settings.json
