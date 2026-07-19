@@ -6,7 +6,7 @@ I used AI as a design and review aid, not as an authority. For each prompt below
 
 **Context:** The deliverable needs a reusable subscription model and a GRR proof point. The inputs are customer, account, subscription, and invoice extracts.
 
-> Act as a senior analytics engineer. Given CRM companies, billing accounts, subscriptions, and invoice events, recommend a Kimball-style dimensional model that supports subscription “as of” questions and revenue retention reporting. Keep invoice events atomic; identify the dimensions required and state where month-level aggregation should occur.
+> Act as a senior data engineer. Given CRM companies, billing accounts, subscriptions, and invoice events, recommend a Kimball-style dimensional model that supports subscription “as of” questions and revenue retention reporting. Keep invoice events atomic; identify the dimensions required and state where month-level aggregation should occur.
 
 **Decision taken:** I retained an atomic `fct_subscription_invoice`, with `dim_customer`, `dim_subscription`, and `dim_date`. Contract dates live in `dim_subscription`; the GRR model is the only layer that aggregates invoice events to customer-month.
 
