@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_billing_account_customer
+    description: Canonical billing-account to customer mapping, including deterministic HubSpot merged-ID resolution.
+    columns:
+      - name: account_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]

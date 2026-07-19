@@ -1,12 +1,3 @@
-with account_customers as (
-    select
-        accounts.account_id,
-        coalesce(id_map.resolved_company_id, 'unmatched:' || accounts.account_id) as customer_id
-    from {{ ref('stg_subskribe__accounts') }} as accounts
-    left join {{ ref('int_customer_id_map') }} as id_map
-        on accounts.crm_company_id = id_map.source_company_id
-)
-
 select
     subscriptions.subscription_id,
     subscriptions.account_id,
@@ -19,5 +10,5 @@ select
     subscriptions.created_at,
     subscriptions.updated_at
 from {{ ref('stg_subskribe__subscriptions') }} as subscriptions
-inner join account_customers
+inner join {{ ref('int_billing_account_customer') }} as account_customers
     on subscriptions.account_id = account_customers.account_id
