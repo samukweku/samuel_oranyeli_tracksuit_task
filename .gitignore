@@ -1,6 +1,7 @@
 .venv/
 logs/
 target/
+dbt_packages/
 tracksuit.duckdb
 .user.yml
 .DS_Store

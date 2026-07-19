@@ -8,3 +8,12 @@ models:
         data_tests: [not_null]
       - name: customer_size_group
         data_tests: [not_null]
+      - name: gross_revenue_retention_pct
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: 'between 0 and 100'
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['report_month', 'customer_size_group']

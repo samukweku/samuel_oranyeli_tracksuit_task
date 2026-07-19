@@ -11,13 +11,16 @@ models:
           - accepted_values:
               arguments:
                 values: ['Enterprise', 'Mid-Market', 'SMB', 'Startup', 'Unknown']
-  - name: fct_customer_subscription_month
-    description: One row per subscription and calendar month in its contract term, with recognised invoice revenue in NZD.
+  - name: dim_date
+    description: Calendar dimension spanning the subscription and invoice history in the raw extract.
     columns:
-      - name: subscription_month
-        data_tests: [not_null]
+      - name: date_day
+        data_tests: [unique, not_null]
+  - name: dim_subscription
+    description: Subscription contract dimension, with customer identity resolved from the billing account's CRM reference.
+    columns:
       - name: subscription_id
-        data_tests: [not_null]
+        data_tests: [unique, not_null]
       - name: customer_id
         data_tests:
           - not_null
@@ -25,3 +28,27 @@ models:
               arguments:
                 to: ref('dim_customer')
                 field: customer_id
+  - name: fct_subscription_invoice
+    description: Atomic invoice fact. One row per issued invoice, including voided invoices and a recognised-revenue flag for financial reporting.
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+      - name: invoice_date
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: subscription_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_subscription')
+                field: subscription_id
+      - name: invoice_total_nzd
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: '>= 0'

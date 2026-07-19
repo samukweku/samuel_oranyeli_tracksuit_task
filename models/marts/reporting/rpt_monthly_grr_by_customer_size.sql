@@ -3,25 +3,28 @@
 -- Anchor to available data, rather than the machine date, for reproducible extracts.
 with customer_monthly_revenue as (
     select
-        subscription_month,
-        customer_id,
-        customer_size_group,
-        sum(recognised_revenue_nzd) as revenue_nzd
-    from {{ ref('fct_customer_subscription_month') }}
+        invoices.invoice_month,
+        invoices.customer_id,
+        customers.customer_size_group,
+        sum(invoices.invoice_total_nzd) as revenue_nzd
+    from {{ ref('fct_subscription_invoice') }} as invoices
+    inner join {{ ref('dim_customer') }} as customers
+        on invoices.customer_id = customers.customer_id
+    where invoices.is_recognised_revenue
     group by 1, 2, 3
 ),
 
 latest_available_month as (
-    select max(subscription_month) as month_start
+    select max(invoice_month) as month_start
     from customer_monthly_revenue
     where revenue_nzd > 0
 ),
 
 reporting_months as (
-    select distinct subscription_month as report_month
-    from customer_monthly_revenue
+    select distinct month_start_date as report_month
+    from {{ ref('dim_date') }}
     cross join latest_available_month
-    where subscription_month between month_start - interval 11 month and month_start
+    where month_start_date between month_start - interval 11 month and month_start
 ),
 
 cohort_revenue as (
@@ -33,10 +36,10 @@ cohort_revenue as (
         coalesce(current_month.revenue_nzd, 0) as current_revenue_nzd
     from reporting_months
     inner join customer_monthly_revenue as baseline
-        on baseline.subscription_month = reporting_months.report_month - interval 12 month
+        on baseline.invoice_month = reporting_months.report_month - interval 12 month
         and baseline.revenue_nzd > 0
     left join customer_monthly_revenue as current_month
-        on current_month.subscription_month = reporting_months.report_month
+        on current_month.invoice_month = reporting_months.report_month
         and current_month.customer_id = baseline.customer_id
 )
 

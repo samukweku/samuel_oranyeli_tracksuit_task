@@ -15,11 +15,11 @@ dbt build
 
 ## Model design and assumptions
 
-The reusable mart consists of `dim_customer` and `fct_customer_subscription_month`. The fact has one row per subscription per calendar month that intersects its contract term. It retains customer attributes, contract dates/state, and recognised invoice revenue in NZD, supporting point-in-time subscription questions and customer-month revenue analysis beyond GRR.
+The reusable mart consists of `dim_customer`, `dim_subscription`, `dim_date`, and `fct_subscription_invoice`. The fact is atomic: it has one row per issued invoice, including voided invoices, so financial events are never pre-aggregated or discarded. `dim_subscription` provides the contract dates and state needed to identify subscriptions active as of any date; `dim_date` provides standard calendar attributes. Together, these support point-in-time subscription questions and financial analysis beyond GRR.
 
 Revenue is assigned to the calendar month of a `PAID` or `POSTED` invoice, using `total_nzd` as Tracksuit's functional currency. `VOIDED` invoices are excluded. A subscription is active in every calendar month from the month of `start_date` through the month of `end_date`, inclusive. This retains invoice revenue issued early in the same month as service start; revenue-recognition across invoice periods is not attempted because those periods are absent.
 
-GRR first aggregates the subscription fact to customer-month. For every reporting month, it selects customers with positive revenue 12 months earlier, fixes that as cohort revenue, and caps each customer's current revenue at the baseline. Customer size is the current HubSpot attribute because no attribute history is supplied.
+GRR aggregates recognised invoice events to customer-month in the reporting layer. For every reporting month, it selects customers with positive revenue 12 months earlier, fixes that as cohort revenue, and caps each customer's current revenue at the baseline. Customer size is the current HubSpot attribute because no attribute history is supplied.
 
 ## Data quality observations
 

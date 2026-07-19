@@ -4,7 +4,7 @@
 
 > Review this dbt take-home brief and recommend a reusable dimensional grain for subscription retention reporting. The raw data contains CRM companies, billing accounts, subscription contracts, and invoice records. Explain how the grain should support “as of any given month” analysis without making GRR a one-off model.
 
-I used the recommendation to build a subscription-calendar-month fact with contract attributes and monthly recognised revenue, plus a customer dimension.
+I used the recommendation to build an atomic invoice fact with subscription, customer, and date dimensions. The reporting model performs the customer-month aggregation needed for GRR.
 
 ## Messy customer identity decision
 
