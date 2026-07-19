@@ -16,9 +16,9 @@ I used AI as a design and review aid, not as an authority. For each prompt below
 
 **Context:** Billing accounts refer to HubSpot IDs, some of which have been merged; two IDs do not exist in the CRM extract.
 
-> Design a deterministic identity-resolution rule for a billing account's CRM ID when the CRM table includes a semicolon-separated list of merged IDs. Do not use fuzzy name matching. Explain how unmatched accounts should be represented so invoice revenue is not silently lost.
+> Design a deterministic identity-resolution rule for a billing account's CRM ID when the CRM table includes a semicolon-separated list of merged IDs. Distinguish the current canonical `company_id` from retired IDs in `merged_object_ids`. Do not use fuzzy name matching. Explain how unmatched accounts should be represented so invoice revenue is not silently lost.
 
-**Decision taken:** `int_customer_id_map` maps both current and merged HubSpot IDs to the surviving company. Accounts without a map receive a stable `unmatched:<account_id>` customer key and `Unknown` segment.
+**Decision taken:** `int_customer_id_map` maps each current canonical HubSpot `company_id` to itself and every retired ID in `merged_object_ids` to that canonical company. Accounts without a map receive a stable `unmatched:<account_id>` customer key and `Unknown` segment.
 
 **Verification:** Profiled the mapping before modelling: 13 accounts resolve through merged IDs and two remain unmatched. Relationship tests confirm every subscription and invoice has a valid dimensional parent.
 
