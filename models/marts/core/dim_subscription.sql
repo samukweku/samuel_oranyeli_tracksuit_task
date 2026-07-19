@@ -1,5 +1,3 @@
-{{ config(materialized='table') }}
-
 with account_customers as (
     select
         accounts.account_id,

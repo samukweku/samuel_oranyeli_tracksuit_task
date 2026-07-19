@@ -1,19 +1,33 @@
 # Meaningful AI prompts
 
-## Model-grain decision
+I used AI as a design and review aid, not as an authority. For each prompt below, I inspected the raw data and validated the resulting implementation with dbt tests and `dbt build`.
 
-> Review this dbt take-home brief and recommend a reusable dimensional grain for subscription retention reporting. The raw data contains CRM companies, billing accounts, subscription contracts, and invoice records. Explain how the grain should support “as of any given month” analysis without making GRR a one-off model.
+## 1. Choose the dimensional grain
 
-I used the recommendation to build an atomic invoice fact with subscription, customer, and date dimensions. The reporting model performs the customer-month aggregation needed for GRR.
+**Context:** The deliverable needs a reusable subscription model and a GRR proof point. The inputs are customer, account, subscription, and invoice extracts.
 
-## Messy customer identity decision
+> Act as a senior analytics engineer. Given CRM companies, billing accounts, subscriptions, and invoice events, recommend a Kimball-style dimensional model that supports subscription “as of” questions and revenue retention reporting. Keep invoice events atomic; identify the dimensions required and state where month-level aggregation should occur.
 
-> Given a CRM company table where `merged_object_ids` contains retired IDs and a billing account table that references CRM IDs, propose a safe identity-resolution approach. Include how to handle billing accounts with no matching CRM ID, and avoid fuzzy name matching.
+**Decision taken:** I retained an atomic `fct_subscription_invoice`, with `dim_customer`, `dim_subscription`, and `dim_date`. Contract dates live in `dim_subscription`; the GRR model is the only layer that aggregates invoice events to customer-month.
 
-I verified the mapping against the raw data. Retired IDs map to the surviving company; unmatched billing accounts are retained as `Unknown` rather than dropped.
+**Verification:** Confirmed invoice ID uniqueness in the raw extract and added uniqueness/relationship tests to the fact. `dbt build` validates the complete dependency graph.
 
-## GRR validation prompt
+## 2. Resolve CRM identity safely
 
-> Check this GRR SQL logic against this definition: for month M, use customers with positive revenue at M-12; divide their retained M revenue by their M-12 revenue; cap each customer's M revenue at M-12; segment by customer size. Identify risks around subscription-level versus customer-level aggregation.
+**Context:** Billing accounts refer to HubSpot IDs, some of which have been merged; two IDs do not exist in the CRM extract.
 
-I aggregate the fact to customer-month before creating the cohort, then cap revenue at customer level. I also ran `dbt build` to verify the implementation.
+> Design a deterministic identity-resolution rule for a billing account's CRM ID when the CRM table includes a semicolon-separated list of merged IDs. Do not use fuzzy name matching. Explain how unmatched accounts should be represented so invoice revenue is not silently lost.
+
+**Decision taken:** `int_customer_id_map` maps both current and merged HubSpot IDs to the surviving company. Accounts without a map receive a stable `unmatched:<account_id>` customer key and `Unknown` segment.
+
+**Verification:** Profiled the mapping before modelling: 13 accounts resolve through merged IDs and two remain unmatched. Relationship tests confirm every subscription and invoice has a valid dimensional parent.
+
+## 3. Apply the GRR definition correctly
+
+**Context:** GRR must use the fixed paying cohort from M-12 and exclude expansion.
+
+> Review a proposed monthly GRR calculation. It must: aggregate invoice events to customer-month; select only customers with positive revenue at M-12; compare each customer to its own baseline; cap current revenue at baseline revenue; and segment the result by customer size. Identify common double-counting or cohort mistakes.
+
+**Decision taken:** The reporting model aggregates recognised (`PAID`/`POSTED`) invoice revenue to customer-month before cohorting. It left joins the current month so churn becomes zero and uses `least(current_revenue, cohort_revenue)` before summing.
+
+**Verification:** Added `dbt_utils` uniqueness and 0–100% bounds tests for the report. The output contains 12 reporting months (June 2025–May 2026) and all tests pass.

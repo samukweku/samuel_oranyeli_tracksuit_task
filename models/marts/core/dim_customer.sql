@@ -1,5 +1,3 @@
-{{ config(materialized='table') }}
-
 with companies as (
     select * from {{ ref('stg_hubspot__companies') }}
 ),

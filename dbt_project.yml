@@ -18,4 +18,12 @@ clean-targets:
 # How you organise, layer, name, and materialise your models is up to you.
 models:
   tracksuit_take_home:
-    +materialized: view
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      core:
+        +materialized: table
+      reporting:
+        +materialized: table

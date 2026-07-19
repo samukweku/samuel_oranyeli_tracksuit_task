@@ -1,5 +1,3 @@
-{{ config(materialized='table') }}
-
 select
     invoices.invoice_id,
     invoices.invoice_date,

@@ -1,5 +1,3 @@
-{{ config(materialized='table') }}
-
 -- Anchor to available data, rather than the machine date, for reproducible extracts.
 with customer_monthly_revenue as (
     select
