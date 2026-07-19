@@ -2,6 +2,14 @@
 
 ## Running the project
 
+The quickest path is:
+
+```bash
+make build
+```
+
+This creates the local virtual environment, installs dependencies, loads the CSVs, installs dbt packages, and runs all models and tests. The equivalent explicit commands are:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
